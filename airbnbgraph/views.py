@@ -50,35 +50,15 @@ class Api(TemplateView):
     def getGraph(request):
         file_path = MEDIA_ROOT+"/clean_data.csv"
         data = pd.read_csv(file_path)
-        response = HttpResponse(content_type="image/jpeg")
+        response = HttpResponse(content_type="image/png")
 
-        name = data["Name"].astype("string")
-        str1 = "" 
-    
-        # traverse in the string  
-        for ele in name: 
-            str1 += ele
-
-        titles = str1
-
-        wordcloud = WordCloud(width = 600, 
-                      height = 800,
-                      max_words=1000,
-#                       mask=mask,
-                      background_color='white',
-                      random_state=42).generate(titles)
-
-        plt.figure(figsize=(12,12)) # inches
-        plt.axis("off")
-        dt = plt.imshow(wordcloud,interpolation='bilinear')
-        
-        # plt.figure(figsize = (13,8))
-        # ax = sb.countplot(x="Location", palette= "RdPu", data=data)
-        # ax.set_ylabel('Count')
-        # ax.set_title('Airbnb Location in Selangor')
-        # for container in ax.containers:
-        #     ax.bar_label(container)
-        # ax.figure.savefig(response , format="png")
+        plt.figure(figsize = (13,8))
+        ax = sb.countplot(x="Location", palette= "RdPu", data=data)
+        ax.set_ylabel('Count')
+        ax.set_title('Airbnb Location in Selangor')
+        for container in ax.containers:
+            ax.bar_label(container)
+        ax.figure.savefig(response , format="png")
         # x=np.arange(0, 2 * np.pi, 0.01)
         # s=np.cos(x)**2
         # plt.plot(x,s)
@@ -88,7 +68,7 @@ class Api(TemplateView):
         # plt.title('Basic Graph!')
         # plt.grid(True)
 
-        # ax.figure.savefig(response , format="png")
+        ax.figure.savefig(response , format="png")
         return response
  
     def getData(request):
