@@ -8,10 +8,10 @@
       <div class="container-fluid">
         <div class="row">
             <div class="col-3">
-            <button onclick="click1()" >click me</button>
+            <button onclick="click1()" >Click me to see scatter plot</button>
             </div>
             <div class="col-9">
-            <span style="background-color:rgb(184, 172, 172)" id="customer"></span>
+                <img id="customer" width="500">
             </div>
         <div>
         <div class="row">
@@ -26,7 +26,7 @@
         <div>
         <div class="row">
             <div class="col-3">
-            <button onclick="getimage()">load graph</button>
+            <button onclick="getimage()">Load Bar Graph</button>
             </div>
             <div class="col-9">
                 <img id="matplotlib" width="500">
@@ -34,14 +34,14 @@
         <div>
         <div class="row">
             <div class="col-3">
-            <button onclick="getPandas()">load table</button>
+            <button onclick="getPandas()">Load table</button>
             </div>
             <div id="pandas" class="col-9">
             </div>
         <div>
         <div class="row">
             <div class="col-3">
-            <button onclick="getSBimage()">seaborn graph</button>
+            <button onclick="getSBimage()">Load Bar Graph</button>
             </div>
             <div class="col-9">
                 <img id="seaborn" width="1000">
@@ -53,8 +53,11 @@
 <script>
     function click1() {
         fetch('{% url 'airbnbgraph:get-num' %}')
-            .then(res => res.text())
-            .then(data => document.getElementById('customer').innerHTML = data)
+        .then(res => res.blob()) // we read a Blob out of the response using blob() #A binary large object (BLOB) is a collection of binary data stored as a single entity.
+		.then(data => {
+            let imgURL = URL.createObjectURL(data) //the URL lifetime is tied to the document in the window on which it was created
+            document.getElementById('customer').src = imgURL
+        })
     }
  
     function getavg() {

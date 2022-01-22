@@ -32,9 +32,19 @@ class HomePageView(TemplateView):
 
 class Api(TemplateView):
     def getNums(request):
-        n = np.array([2,3,4])
-        name1 = "name-1" + str(n[1])
-        return HttpResponse('{"name:":'+name1+',"age":31,"city":"New York"}')
+        file_path = MEDIA_ROOT+"/clean_data.csv"
+        data = pd.read_csv(file_path)
+        response = HttpResponse(content_type="image/png")
+
+        plt.figure(figsize = (13,8))
+        ax = sb.stripplot(x="Price", y="Location", data=data, jitter=2.0, hue="Location")
+        #ax = sns.countplot(y="Location", palette= "RdPu", data=data)
+
+        ax.set_title('Price of Airbnb based on Location in Selangor')
+
+        ax.figure.savefig(response , format="png")
+
+        return response
 
     def getAvg(request):
         s1=request.GET.get("val", "")
@@ -58,7 +68,7 @@ class Api(TemplateView):
         ax.set_title('Airbnb Location in Selangor')
         for container in ax.containers:
             ax.bar_label(container)
-        ax.figure.savefig(response , format="png")
+        # ax.figure.savefig(response , format="png")
         # x=np.arange(0, 2 * np.pi, 0.01)
         # s=np.cos(x)**2
         # plt.plot(x,s)
@@ -84,14 +94,37 @@ class Api(TemplateView):
         data = pd.read_csv(file_path)
         response = HttpResponse(content_type="image/jpeg")
 
+        price_range = []
+
+        for x in data["Price"]:
+            if x <=100:
+                price_range.append('0-100')
+            elif 100< x <=200:
+                price_range.append('101-200')
+            else:
+                price_range.append('201-300')
+            
+        data["Price_Range"] = price_range
         
-        # Graph 1
-        plt.figure(figsize = (13,8))
-        ax = sb.countplot(x="Location", palette= "RdPu", data=data)
-        ax.set_ylabel('Count')
-        ax.set_title('Airbnb Location in Selangor')
+        data.Price_Range=data.Price_Range.astype('category')
+
+        percent_pool = pd.crosstab(data.loc[:, "Price_Range"], 
+               data.loc[:, "Pool"], 
+               normalize = "index") * 100 #Normalized by index so that all rows equals to 100
+        
+        c = ["#FEA3AA","#FFE4E1"]
+        ax = percent_pool.plot(kind='bar', stacked=False, rot=0, color= c, figsize=(13, 8)) 
+        ax.set_ylabel('Percentage %')
+        ax.set_title('Percentage of Pool Provided based on Price Range')
         for container in ax.containers:
-            ax.bar_label(container)
+            ax.bar_label(container)     
+        # Graph 1
+        # plt.figure(figsize = (13,8))
+        # ax = sb.countplot(x="Location", palette= "RdPu", data=data)
+        # ax.set_ylabel('Count')
+        # ax.set_title('Airbnb Location in Selangor')
+        # for container in ax.containers:
+        #     ax.bar_label(container)
         ax.figure.savefig(response , format="png")        
         # pdfFile.savefig(ax.figure)
 
