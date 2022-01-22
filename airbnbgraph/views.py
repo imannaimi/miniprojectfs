@@ -19,6 +19,9 @@ import urllib
 # from IPython.display import display
 import random
 import warnings
+import io
+import urllib, base64
+
 warnings.filterwarnings("ignore")
 from scipy.stats import norm, poisson, uniform, skew, kurtosis, iqr 
 from matplotlib.backends.backend_pdf import PdfPages
@@ -50,14 +53,13 @@ class Api(TemplateView):
         response = HttpResponse(content_type="image/jpeg")
 
         name = data["Name"].astype("string")
-
         str1 = "" 
     
         # traverse in the string  
         for ele in name: 
             str1 += ele
-        
-        titles = listToString(name)
+
+        titles = str1
 
         wordcloud = WordCloud(width = 600, 
                       height = 800,
@@ -65,11 +67,18 @@ class Api(TemplateView):
 #                       mask=mask,
                       background_color='white',
                       random_state=42).generate(titles)
-        
+
         plt.figure(figsize=(12,12)) # inches
         plt.axis("off")
-        ax = plt.imshow(wordcloud,interpolation='bilinear')
-
+        dt = plt.imshow(wordcloud,interpolation='bilinear')
+        
+        # plt.figure(figsize = (13,8))
+        # ax = sb.countplot(x="Location", palette= "RdPu", data=data)
+        # ax.set_ylabel('Count')
+        # ax.set_title('Airbnb Location in Selangor')
+        # for container in ax.containers:
+        #     ax.bar_label(container)
+        # ax.figure.savefig(response , format="png")
         # x=np.arange(0, 2 * np.pi, 0.01)
         # s=np.cos(x)**2
         # plt.plot(x,s)
@@ -79,7 +88,7 @@ class Api(TemplateView):
         # plt.title('Basic Graph!')
         # plt.grid(True)
 
-        ax.figure.savefig(response , format="png")
+        # ax.figure.savefig(response , format="png")
         return response
  
     def getData(request):
@@ -90,12 +99,12 @@ class Api(TemplateView):
     def getSeabornGraph(request):
         # response = HttpResponse(PdfPages("output.pdf"))
         # response = HttpResponse(response.content, content_type='application/pdf')
-        pdfFile = PdfPages("output.pdf")
-        response = HttpResponse(pdfFile, content_type='application/pdf')
-
+        # pdfFile = PdfPages("output.pdf")
         file_path = MEDIA_ROOT+"/clean_data.csv"
         data = pd.read_csv(file_path)
+        response = HttpResponse(content_type="image/jpeg")
 
+        
         # Graph 1
         plt.figure(figsize = (13,8))
         ax = sb.countplot(x="Location", palette= "RdPu", data=data)
@@ -103,22 +112,22 @@ class Api(TemplateView):
         ax.set_title('Airbnb Location in Selangor')
         for container in ax.containers:
             ax.bar_label(container)
-        # ax.figure.savefig(response , format="png")        
-        pdfFile.savefig(ax.figure)
+        ax.figure.savefig(response , format="png")        
+        # pdfFile.savefig(ax.figure)
 
         # Graph 2
-        plt.figure(figsize = (13,8))
-        ax = sb.countplot(y="Location", palette= "RdPu", data=data)
-        ax.set_ylabel('Count')
-        ax.set_title('Airbnb Location in Selangor')
-        for container in ax.containers:
-            ax.bar_label(container)
-        pdfFile.savefig(ax.figure)
+        # plt.figure(figsize = (13,8))
+        # ax = sb.countplot(y="Location", palette= "RdPu", data=data)
+        # ax.set_ylabel('Count')
+        # ax.set_title('Airbnb Location in Selangor')
+        # for container in ax.containers:
+        #     ax.bar_label(container)
+        # pdfFile.savefig(ax.figure)
         # graph = sb.factorplot(x='Survived',hue='Sex',data=df, col='Pclass',kind='count') #passenger class
         # graph = sb.factorplot(x='Price',hue='Rating',data=df, col='Location',kind='count')
         # graph.savefig(response, format="png")
 
-        pdfFile.close()
+        # pdfFile.close()
         return response
  
 # # Chapter 4: CHART.JS (Involves Javascript)
