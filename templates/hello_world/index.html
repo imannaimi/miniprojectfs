@@ -1,0 +1,14 @@
+{% extends "hello_world/base.html"%}
+{% block body_block %}
+
+<div class="container">
+	<div class="jumbotron">
+		<h1> Welcome to hello world!</h1>
+        {% if users.is_authenticated %}
+            <h2>Hello {{user.username}}</h2>
+        {% else %}
+            <h2>Register or login if you would like to</h2>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

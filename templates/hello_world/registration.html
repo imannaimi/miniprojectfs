@@ -1,0 +1,37 @@
+{% extends "hello_world/base.html" %}
+{% block body_block %}
+
+<div class="container">
+	<div class="jumbotron">
+		{% if registered %}
+			<h1>Thank you for registering!</h1>
+		{% else %}
+        	<h1>Register here</h1>
+			<h3>Just fill up the form</h3>
+			<form enctype="multipart/form-data" method="POST">
+				{% csrf_token %}
+				{{user_form_.as_p}}
+                <label for="username">Username:</label>
+                <input type="text" name="username" placeholder="Username">
+
+                <label for="password">Password:</label>
+                <input type="password" name="password" placeholder="Password">
+
+                <label for="email">Email:</label>
+                <input type="email" name="email" placeholder="Email">
+
+                <label for="occupation">Occupation:</label>
+                <input type="text" name="occupation" placeholder="Occupation">
+
+                <label for="company">Company:</label>
+                <input type="text" name="company" placeholder="Company">
+
+				{{profile_form_.as_p}}
+				<input type="submit" name="" value="Register">
+			</form>
+		{% endif %}
+	</div>
+</div>
+{% endblock %}
+
+
