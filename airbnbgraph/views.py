@@ -37,24 +37,33 @@ class Api(TemplateView):
         response = HttpResponse(content_type="image/png")
 
         plt.figure(figsize = (13,8))
-        ax = sb.stripplot(x="Price", y="Location", data=data, jitter=2.0, hue="Location")
-        #ax = sns.countplot(y="Location", palette= "RdPu", data=data)
-
-        ax.set_title('Price of Airbnb based on Location in Selangor')
+        ax = sb.countplot(y="Location", palette= "RdPu", data=data)
+        ax.set_ylabel('Count')
+        ax.set_title('Airbnb Location in Kuala Lumpur and Selangor')
+        for container in ax.containers:
+            ax.bar_label(container)
 
         ax.figure.savefig(response , format="png")
 
         return response
 
-    def getAvg(request):
-        s1=request.GET.get("val", "")
-        print(s1)
-        if len(s1)==0:
-            return HttpResponse("none")
-        l1=s1.split(',')
-        ar=np.array(l1,dtype=int)
+    def getwc(request):
+        file_path = MEDIA_ROOT+"/airbnb_wordcloud.png"
+        word_cloud = pd.read_csv(file_path)
+        response = HttpResponse(content_type="image/png")
+        # mask = np.array(Image.open(MEDIA_ROOT+"/airbnb.png")) 
 
-        return HttpResponse(str(np.average(ar)))
+        # color= ImageColorGenerator(mask)
+
+        # word_cloud = WordCloud(width = 480, height = 480, background_color='white', colormap='plasma', mask=mask).generate(titles)
+        # plt.figure(figsize=(9,8),facecolor = 'white')
+        # plt.imshow(word_cloud,interpolation='bilinear')
+        # plt.axis('off')
+        # plt.tight_layout(pad=0)
+        # plt.show()
+        word_cloud.figure.savefig(response , format="png")
+
+        return response
     
     # Wordcloud 1
     def getGraph(request):
@@ -63,20 +72,8 @@ class Api(TemplateView):
         response = HttpResponse(content_type="image/png")
 
         plt.figure(figsize = (13,8))
-        ax = sb.countplot(x="Location", palette= "RdPu", data=data)
-        ax.set_ylabel('Count')
-        ax.set_title('Airbnb Location in Selangor')
-        for container in ax.containers:
-            ax.bar_label(container)
-        # ax.figure.savefig(response , format="png")
-        # x=np.arange(0, 2 * np.pi, 0.01)
-        # s=np.cos(x)**2
-        # plt.plot(x,s)
- 
-        # plt.xlabel('xlabel(X)')
-        # plt.ylabel('ylabel(y)')
-        # plt.title('Basic Graph!')
-        # plt.grid(True)
+        ax = sb.stripplot(x="Price", y="Location", data=data, jitter=2.0, hue="Location")
+        ax.set_title('Price of Airbnb based on Location')
 
         ax.figure.savefig(response , format="png")
         return response
@@ -97,53 +94,59 @@ class Api(TemplateView):
         price_range = []
 
         for x in data["Price"]:
-            if x <=100:
-                price_range.append('0-100')
-            elif 100< x <=200:
-                price_range.append('101-200')
+            if x <=200:
+                price_range.append('0-200')
+            elif 200< x <=400:
+                price_range.append('201-400')
+            elif 400< x <=600:
+                price_range.append('401-600')
+            elif 600< x <=800:
+                price_range.append('601-800')
+            elif 800< x <=1000:
+                price_range.append('801-1000')
             else:
-                price_range.append('201-300')
-            
+                price_range.append('More than 1000')
+        
         data["Price_Range"] = price_range
         
         data.Price_Range=data.Price_Range.astype('category')
+        
+        percent_pool = pd.crosstab(data.loc[:, "Price_Range"], 
+                             data.loc[:, "Pool"])
 
         percent_pool = pd.crosstab(data.loc[:, "Price_Range"], 
                data.loc[:, "Pool"], 
                normalize = "index") * 100 #Normalized by index so that all rows equals to 100
-        
+
         c = ["#FEA3AA","#FFE4E1"]
         ax = percent_pool.plot(kind='bar', stacked=False, rot=0, color= c, figsize=(13, 8)) 
         ax.set_ylabel('Percentage %')
-        ax.set_title('Percentage of Pool Provided based on Price Range')
+        ax.set_title('Percentage of Pool Accessibility based on Price Range')
         for container in ax.containers:
-            ax.bar_label(container)     
-        # Graph 1
-        # plt.figure(figsize = (13,8))
-        # ax = sb.countplot(x="Location", palette= "RdPu", data=data)
-        # ax.set_ylabel('Count')
-        # ax.set_title('Airbnb Location in Selangor')
-        # for container in ax.containers:
-        #     ax.bar_label(container)
-        ax.figure.savefig(response , format="png")        
-        # pdfFile.savefig(ax.figure)
+            ax.bar_label(container,fmt='%.1f%%')    
+        ax.figure.savefig(response , format="png")
+        return response
 
-        # Graph 2
-        # plt.figure(figsize = (13,8))
-        # ax = sb.countplot(y="Location", palette= "RdPu", data=data)
-        # ax.set_ylabel('Count')
-        # ax.set_title('Airbnb Location in Selangor')
-        # for container in ax.containers:
-        #     ax.bar_label(container)
-        # pdfFile.savefig(ax.figure)
-        # graph = sb.factorplot(x='Survived',hue='Sex',data=df, col='Pclass',kind='count') #passenger class
-        # graph = sb.factorplot(x='Price',hue='Rating',data=df, col='Location',kind='count')
-        # graph.savefig(response, format="png")
+    def getSeabornGraph1(request):
+        file_path = MEDIA_ROOT+"/clean_data.csv"
+        data = pd.read_csv(file_path)
+        response = HttpResponse(content_type="image/jpeg")
 
-        # pdfFile.close()
+        percent_wifi = pd.crosstab(data.loc[:, "Price_Range"], 
+               data.loc[:, "Wifi"], 
+               normalize = "index") * 100 #Normalized by index so that all rows equals to 100
+               
+        c = ["#C25283","#FDD7E4"]
+        ax = percent_wifi.plot(kind='bar', stacked=False, rot=0, color= c, figsize=(13, 8)) 
+        ax.set_ylabel('Percentage %')
+        ax.set_title('Percentage of Wifi Accessibility based on Price Range')
+        for container in ax.containers:
+            ax.bar_label(container,fmt='%.1f%%') 
+
+        ax.figure.savefig(response , format="png")
         return response
  
-# # Chapter 4: CHART.JS (Involves Javascript)
+# Chapter 4: CHART.JS (Involves Javascript)
  
 from rest_framework.views import APIView #Using the APIView class is pretty much the same as using a regular View class
 from rest_framework.response import Response
